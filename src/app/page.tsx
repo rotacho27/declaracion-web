@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import Countdown from "@/components/Countdown"; // Ajusta la ruta si es necesario
+import Countdown from "../components/Countdown"; // Ajusta la ruta si es necesario
 import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
-const FECHA_DE_DECLARACION = "2026-01-07T22:10:00"; 
+const FECHA_DE_DECLARACION = "2026-01-28T22:10:00"; 
 
 // --- Componente con el contenido de la declaración (Lo que ya teníamos) ---
 const MainContent = () => {
