@@ -17,7 +17,7 @@ const handleAnimationComplete = () => {
 };
 
 // --- CONFIGURACIÓN ---
-const FECHA_DE_DECLARACION = "2026-01-19T20:09:00";
+const FECHA_DE_DECLARACION = "2026-01-30T19:15:00";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -134,17 +134,7 @@ const MainContent = () => {
       {/* --- SECCIÓN 1: HERO --- */}
       <section id="hero" className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="bg-image absolute inset-0 z-0  bg-cover bg-center scale-110 opacity-60">
-          <Prism
-            animationType="rotate"
-            timeScale={0.5}
-            height={3.5}
-            baseWidth={5.5}
-            scale={3.6}
-            hueShift={0}
-            colorFrequency={1}
-            noise={0}
-            glow={1}
-          />
+          
         </div>
 
         <div className="relative z-20 w-full text-center px-4 animate-fade-in-up">
