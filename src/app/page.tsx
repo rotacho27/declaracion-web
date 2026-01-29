@@ -11,13 +11,15 @@ import Countdown from "../components/Countdown";
 import MusicController from "../components/MusicController";
 import SplitText from "../components/SplitText";
 import Prism from '../components/Prism';
+import DecryptedText from "../components/DecryptedText";
+import ScrollAnimation from "../components/ScrollAnimation";
 
 const handleAnimationComplete = () => {
   console.log('All letters have animated!');
 };
 
 // --- CONFIGURACIÓN ---
-const FECHA_DE_DECLARACION = "2026-01-30T19:15:00";
+const FECHA_DE_DECLARACION = "2026-01-30T18:10:00";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -27,10 +29,11 @@ const MainContent = () => {
   const container = useRef<HTMLDivElement>(null);
   const lenisRef = useRef<Lenis | null>(null);
 
-  // 1. PLAYLIST
+  // 1. PLAYLIST ACTUALIZADA
   const playlist = [
     { sectionId: "hero", songUrl: "/music/a%20sky%20full%20of%20star.mp3" },
     { sectionId: "zoom-carta-section", songUrl: "/music/a%20sky%20full%20of%20star.mp3" }, 
+    { sectionId: "reasons", songUrl: "/music/emotional.mp3" }, // <--- NUEVA MÚSICA PARA LA NUEVA SECCIÓN
     { sectionId: "final", songUrl: "/music/climax.mp3" }
   ];
 
@@ -111,8 +114,20 @@ const MainContent = () => {
       ease: "power2.out"
     }, "-=0.5");
 
+    // C. NUEVA ANIMACIÓN PARA LA SECCIÓN DE RAZONES
+    gsap.from(".reason-card", {
+      scrollTrigger: {
+        trigger: "#reasons",
+        start: "top 70%", // Comienza cuando la sección está visible
+      },
+      y: 100,
+      opacity: 0,
+      duration: 1,
+      stagger: 0.3, // Aparecen una por una
+      ease: "power3.out"
+    });
 
-    // C. Pregunta Final
+    // D. Pregunta Final
     gsap.from("#pregunta-content", {
       scrollTrigger: {
         trigger: "#final",
@@ -133,8 +148,18 @@ const MainContent = () => {
 
       {/* --- SECCIÓN 1: HERO --- */}
       <section id="hero" className="relative h-screen flex items-center justify-center overflow-hidden">
-        <div className="bg-image absolute inset-0 z-0  bg-cover bg-center scale-110 opacity-60">
-          
+        <div className="bg-image absolute inset-0 z-0 bg-cover bg-center scale-110 opacity-60">
+          {/* <Prism
+            animationType="rotate"
+            timeScale={0.5}
+            height={3.5}
+            baseWidth={5.5}
+            scale={3.6}
+            hueShift={0}
+            colorFrequency={1}
+            noise={0}
+            glow={1}
+          /> */}
         </div>
 
         <div className="relative z-20 w-full text-center px-4 animate-fade-in-up">
@@ -162,29 +187,19 @@ const MainContent = () => {
       <section id="zoom-carta-section" className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-black">
         
         {/* CAPA 1: CARTA (FONDO) */}
-        <div id="carta-content" className="absolute inset-0 z-0 flex flex-col items-center justify-center px-6 pt-20">
-          <div className="max-w-2xl text-center space-y-12">
+        <div id="carta-content" className="absolute inset-0 z-0 flex flex-col items-center justify-center">
+          <div className="max-w-2xl text-left space-y-12 px-6">
             
-            <h2 className="text-3xl md:text-5xl font-serif text-slate-100 drop-shadow-lg">
-              No sabía cómo decirte esto...
-            </h2>
-
-            <div className="space-y-6 text-lg md:text-2xl font-light text-slate-300 leading-relaxed">
-              <p>
-                He estado contando los días, las horas y los segundos en ese reloj.
-                Pero mi corazón ha estado contando los latidos desde que te conocí.
-              </p>
-              <p>
-                Eres la melodía favorita de mis días y la paz de mis noches.
-                No quiero pasar un minuto más sin que sepas lo que siento.
-              </p>
+            <div className="space-y-6 text-lg md:text-2xl font-light text-slate-300 leading-relaxed whitespace-pre-line">
+                <DecryptedText
+                  text={"Es un gusto tenerte aquí.\n\nTe mando un cordial saludo a través de la pantalla!\nSeguramente tienes muchas preguntas en este momento y te aseguro que al final todas serán respondidas. \n\nSolo... sigue bajando."}
+                  animateOn="view"
+                  revealDirection="start"
+                  sequential
+                  useOriginalCharsOnly={false} 
+                  />
             </div>
 
-            <div className="w-full max-w-sm mx-auto aspect-video bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center overflow-hidden shadow-2xl">
-               <span className="text-slate-600 text-sm italic">
-                 (Aquí iría nuestra mejor foto juntos)
-               </span>
-            </div>
           </div>
         </div>
 
@@ -213,15 +228,22 @@ const MainContent = () => {
           {/* Texto Inferior Derecha */}
           <div className="corner-text absolute bottom-10 right-6 md:bottom-20 md:right-20">
             <h2 className="text-3xl md:text-6xl font-bold uppercase text-[#C8B6FF] tracking-tighter drop-shadow-lg text-right">
-              SIN DUDA
+              VERDAD?
             </h2>
           </div>
         </div>
       </section>
 
+      <section id="video-scroll" className="h-[200vh] bg-black">
+        <ScrollAnimation />
+      </section>
+          
+      
+
       {/* --- SECCIÓN 4: FINAL --- */}
       <section id="final" className="relative z-20 h-screen flex flex-col items-center justify-center bg-gradient-to-t from-red-950 via-black to-black px-4">
         <div id="pregunta-content" className="text-center">
+
           <h2 className="text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-white to-purple-300 mb-16 drop-shadow-[0_0_35px_rgba(255,255,255,0.4)]">
             ¿Quieres ser mi novia?
           </h2>
