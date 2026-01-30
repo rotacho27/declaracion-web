@@ -16,9 +16,9 @@ import ScrollReveal from "../components/ScrollReveal";
 // --- CONFIGURACIÓN ---
 const FECHA_DE_DECLARACION = "2026-01-29T17:10:00";
 const TOTAL_FRAMES = 79;
-const FRAME_PATH = "/frames/26452-358778857_";
+const FRAME_PATH = "/frames/x/26452-358778857_";
 
-// --- DATOS DE LA LÍNEA DE TIEMPO (¡EDITA ESTO!) ---
+// --- DATOS DE LA LÍNEA DE TIEMPO ---
 const TIMELINE_DATA = [
   {
     date: "10 de abril",
@@ -30,13 +30,13 @@ const TIMELINE_DATA = [
     date: "31 de mayo",
     title: "Un acercamiento inesperado...",
     desc: "Un festejo por el día de la madre que se llevó una gran sorpresa.",
-    img: "/images/dia-madre.jpeg"
+    img: "/images/dia-madre.jpg"
   },
   {
     date: "16 de junio",
     title: "Una muchacha arriesgada",
     desc: "El primer mensaje de muchos.",
-    img: "/images/wapp.jpeg"
+    img: "/images/wapp.jpg"
   },
   {
     date: "11 de julio",
@@ -54,7 +54,7 @@ const TIMELINE_DATA = [
     date: "06 de agosto",
     title: "Nuestra primera salida",
     desc: "Una día hermoso para conocernos y desarmarnos completamente.",
-    img: "/images/salida.jpeg"
+    img: "/images/salida.jpg"
   },
   {
     date: "29 de agosto",
@@ -66,20 +66,28 @@ const TIMELINE_DATA = [
     date: "30 de agosto",
     title: "Mi primera muestra de amor",
     desc: "Edificadoras, una flor y un corazon mal hecho",
-    img: "/images/ginebra.jpeg"
+    img: "/images/ginebra.jpg"
   },
   {
     date: "5 de septiembre",
     title: "Una primera cita desastrosa",
     desc: "Todo lo que podia salir mal, salió mal. Pero aun así, fue perfecto.",  
-    img: "/images/wapp2.jpeg"
+    img: "/images/wapp2.jpg"
   },
   {
     date: "20 de septiembre",
     title: "Una verdadera cita",
     desc: "Un musical cargado de recuerdos bonitos y una espera que valió la pena.",
-    img: "/images/primera.jpeg"
+    img: "/images/primera.jpg"
   }
+];
+
+// --- DATOS DE ESTADÍSTICAS ---
+const STATS_DATA = [
+  { label: "Mensajes enviados", value: 23964, suffix: "+", color: "text-green-400" },
+  { label: "Máximo de Horas en Videollamada", value: 2, suffix: "h", color: "text-blue-400" },
+  { label: "Palabra más usada", value: "Tlabaja", isText: true, color: "text-pink-400" }, 
+  { label: "Horas pico en chat", value: "11:00 - 1:00", isText: true, suffix: "+", color: "text-yellow-400" }
 ];
 
 
@@ -92,15 +100,17 @@ const handleAnimationComplete = () => {
 };
 
 function getCurrentFrame(index: number) {
-  return `${FRAME_PATH}${String(index).padStart(3, "0")}.jpg`;
+  return `${FRAME_PATH}${String(index).padStart(3, "0")}.jpg.jpg`;
 }
 
 const MainContent = () => {
   const container = useRef<HTMLDivElement>(null);
   const lenisRef = useRef<Lenis | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  // Referencia para el contenedor que se moverá horizontalmente
   const timelineTrackRef = useRef<HTMLDivElement>(null);
+  
+  // Referencia para los números de las estadísticas
+  const statRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   // 1. PLAYLIST
   const playlist = [
@@ -109,7 +119,8 @@ const MainContent = () => {
     { sectionId: "video-scroll", songUrl: "/music/intro.mp3" }, 
     { sectionId: "definition-section", songUrl: "/music/a%20sky%20full%20of%20star.mp3" }, 
     { sectionId: "reasons", songUrl: "/music/emotional.mp3" },
-    { sectionId: "timeline-section", songUrl: "/music/emotional.mp3" }, // Agregado al playlist
+    { sectionId: "timeline-section", songUrl: "/music/emotional.mp3" }, 
+    { sectionId: "stats-section", songUrl: "/music/emotional.mp3" }, 
     { sectionId: "final", songUrl: "/music/climax.mp3" }
   ];
 
@@ -130,7 +141,14 @@ const MainContent = () => {
 
     gsap.ticker.lagSmoothing(0);
 
+    // --- CORRECCIÓN CLAVE: REFRESCAR SCROLLTRIGGER ---
+    // Esto recalcula las posiciones después de que se carga el DOM
+    const timer = setTimeout(() => {
+        ScrollTrigger.refresh();
+    }, 500);
+
     return () => {
+      clearTimeout(timer);
       gsap.ticker.remove((time) => lenis.raf(time * 1000));
       lenis.destroy();
     };
@@ -151,7 +169,7 @@ const MainContent = () => {
       },
     });
 
-    // --- B. SECCIÓN COMBINADA ---
+    // --- B. SECCIÓN COMBINADA (CARTA) ---
     const tlMask = gsap.timeline({
       scrollTrigger: {
         trigger: "#zoom-carta-section",
@@ -172,7 +190,6 @@ const MainContent = () => {
     // --- D. VIDEO SCROLL ---
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
-
     if (canvas && context) {
       canvas.width = 1920; 
       canvas.height = 1080;
@@ -230,27 +247,67 @@ const MainContent = () => {
     .to({}, { duration: 0.5 });
 
 
-    // --- NUEVO: HORIZONTAL SCROLL TIMELINE ---
+    // --- HORIZONTAL SCROLL TIMELINE ---
     const track = timelineTrackRef.current;
     if (track) {
-      // Calculamos cuánto tenemos que mover el track hacia la izquierda.
-      // (Ancho total del track - Ancho de la ventana)
       const getScrollAmount = () => -(track.scrollWidth - window.innerWidth);
-      
       const tween = gsap.to(track, {
         x: getScrollAmount,
         ease: "none",
         scrollTrigger: {
           trigger: "#timeline-section",
           start: "top top",
-          // Ajusta el 'end' para hacer el scroll más lento o rápido
           end: () => `+=${getScrollAmount() * -1 + 1000}`, 
           pin: true,
           scrub: 1,
-          invalidateOnRefresh: true, // Recalcula si cambia el tamaño de ventana
+          invalidateOnRefresh: true,
         }
       });
     }
+
+    // --- NUEVA SECCIÓN: ESTADÍSTICAS (ROBUSTA) ---
+    // Animación de entrada de las tarjetas - Usamos fromTo para mayor seguridad
+    gsap.fromTo(".stat-card", 
+      { 
+        y: 100, 
+        autoAlpha: 0 // autoAlpha maneja opacity + visibility
+      },
+      {
+        y: 0,
+        autoAlpha: 1,
+        duration: 1,
+        stagger: 0.2,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: "#stats-section",
+          start: "top 80%",
+          toggleActions: "play none none reverse" // Asegura que se reproduzca
+        }
+      }
+    );
+
+    // Animación de conteo numérico
+    STATS_DATA.forEach((stat, index) => {
+      if (!stat.isText) { 
+        const targetElement = statRefs.current[index];
+
+        if(targetElement) {
+            const obj = { val: 0 };
+            gsap.to(obj, {
+              val: stat.value,
+              duration: 2,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: targetElement,
+                start: "top 90%", // Un poco más permisivo para asegurar que se active
+              },
+              onUpdate: () => {
+                targetElement.innerText = Math.floor(obj.val).toLocaleString() + (stat.suffix || "");
+              }
+            });
+        }
+      }
+    });
 
 
     // --- E. Pregunta Final ---
@@ -343,7 +400,7 @@ const MainContent = () => {
                    <div className="mt-6 h-1 w-24 bg-pink-400/50 rounded-full"></div> 
                </div>
                <div className="relative h-[500px] md:h-[700px] w-full rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl shadow-pink-500/10">
-                   <img id="def-image-reveal" src="/images/linda-muchacha.jpeg" alt="Foto de ella" className="w-full h-full object-cover" style={{ clipPath: "inset(0% 100% 0% 0%)" }} />
+                   <img id="def-image-reveal" src="/images/linda-muchacha.jpg" alt="Foto de ella" className="w-full h-full object-cover" style={{ clipPath: "inset(0% 100% 0% 0%)" }} />
                </div>
            </div>
       </section>
@@ -352,48 +409,32 @@ const MainContent = () => {
       <div id="reasons" className="relative min-h-[50vh] bg-black z-20 flex items-center justify-center px-6 py-20">
          <div className="max-w-3xl text-center">
             <ScrollReveal baseOpacity={0.3} enableBlur baseRotation={3} blurStrength={4}>
-                Andrea Nicole Ochoa Bustillos, hoy 30 de enero de 2026, es el día en el que quiero pedirte algo muy importante.
-                Es importante para mí porque sé que me dirijo a una hija de Papá. Por eso, antes de dar este paso, quiero que 
-                sientas todo mi amor. Pero antes, hagamos memoria de todo lo que hemos compartido hasta este momento:
+               Andrea Nicole Ochoa Bustillos, hoy 30 de enero de 2026, es el día en el que quiero pedirte algo muy importante.
+               Es importante para mí porque sé que me dirijo a una hija de Papá. Por eso, antes de dar este paso, quiero que 
+               sientas todo mi amor. Pero antes, hagamos memoria de todo lo que hemos compartido hasta este momento:
             </ScrollReveal>
          </div>
       </div>
 
-      {/* --- NUEVA SECCIÓN: TIMELINE (SCROLL HORIZONTAL) --- */}
+      {/* --- SECCIÓN TIMELINE --- */}
       <section id="timeline-section" className="relative h-screen bg-neutral-900 overflow-hidden flex items-center z-20">
-        
-        {/* Título flotante (opcional, fijo a la izquierda) */}
         <div className="absolute top-10 left-10 z-30 pointer-events-none">
             <h3 className="text-white/20 text-4xl font-bold uppercase tracking-widest">Nuestra Historia</h3>
         </div>
-
-        {/* El Track que se mueve horizontalmente */}
         <div ref={timelineTrackRef} className="flex h-full w-fit px-10 md:px-32 items-center gap-10 md:gap-40">
-            
-            {/* Tarjeta de Inicio (Intro) */}
             <div className="timeline-item flex-shrink-0 w-[80vw] md:w-[600px] h-[70vh] flex flex-col justify-center">
-                <h2 className="text-5xl md:text-8xl font-bold text-white mb-6">
-                    Cada fecha <br/> 
-                    <span className="text-purple-400">cuenta...</span>
-                </h2>
+                <h2 className="text-5xl md:text-8xl font-bold text-white mb-6">Cada fecha <br/> <span className="text-purple-400">cuenta...</span></h2>
                 <p className="text-xl text-slate-400 max-w-md">Desliza para ver nuestros mejores momentos →</p>
             </div>
-
-            {/* Mapeo de eventos */}
             {TIMELINE_DATA.map((item, index) => (
                 <div key={index} className="timeline-item flex-shrink-0 w-[85vw] md:w-[800px] h-[70vh] relative group overflow-hidden rounded-3xl border border-white/10 bg-white/5">
-                    {/* Imagen de fondo */}
                     <div className="absolute inset-0">
                         <img src={item.img} alt={item.title} className="w-full h-full object-cover opacity-60 group-hover:opacity-40 group-hover:scale-105 transition-all duration-700" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
                     </div>
-                    
-                    {/* Contenido */}
                     <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full">
                         <div className="flex items-center gap-4 mb-4">
-                            <span className="px-4 py-2 bg-pink-500/20 text-pink-300 rounded-full text-sm font-bold border border-pink-500/30 backdrop-blur-md">
-                                {item.date}
-                            </span>
+                            <span className="px-4 py-2 bg-pink-500/20 text-pink-300 rounded-full text-sm font-bold border border-pink-500/30 backdrop-blur-md">{item.date}</span>
                             <div className="h-[1px] flex-grow bg-white/20"></div>
                         </div>
                         <h3 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight">{item.title}</h3>
@@ -401,18 +442,39 @@ const MainContent = () => {
                     </div>
                 </div>
             ))}
-
-            {/* Tarjeta Final */}
-            <div className="timeline-item flex-shrink-0 w-[80vw] md:w-[500px] h-[70vh] flex flex-col justify-center items-center text-center">
-                 <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                    Y la historia <br/> sigue...
-                </h2>
-                <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center animate-bounce">
-                    <span className="text-2xl">↓</span>
-                </div>
+             <div className="timeline-item flex-shrink-0 w-[80vw] md:w-[500px] h-[70vh] flex flex-col justify-center items-center text-center">
+                 <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">Y la historia <br/> sigue...</h2>
             </div>
-
         </div>
+      </section>
+
+      {/* --- NUEVA SECCIÓN: ESTADÍSTICAS --- */}
+      <section id="stats-section" className="relative z-20 min-h-screen bg-black flex flex-col items-center justify-center py-20 px-6">
+          <div className="max-w-6xl w-full text-center mb-16">
+              <h2 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 mb-6">
+                  Nuestros Números
+              </h2>
+              <p className="text-slate-400 text-xl">Lo que dicen los datos de nosotros...</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl w-full">
+              {STATS_DATA.map((stat, index) => (
+                  <div key={index} className="stat-card relative p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10 transition-all duration-500 group overflow-hidden">
+                      {/* Efecto Glow de fondo */}
+                      <div className={`absolute -right-10 -top-10 w-32 h-32 rounded-full opacity-20 blur-3xl group-hover:opacity-40 transition-opacity ${stat.color.replace('text-', 'bg-')}`}></div>
+                      
+                      <h3 className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-4">{stat.label}</h3>
+                      <div className="flex items-baseline">
+                          <span 
+                            ref={(el) => { statRefs.current[index] = el }}
+                            className={`text-5xl md:text-6xl font-black ${stat.color}`}
+                          >
+                            {stat.isText ? stat.value : 0}
+                          </span>
+                      </div>
+                  </div>
+              ))}
+          </div>
       </section>
 
 
