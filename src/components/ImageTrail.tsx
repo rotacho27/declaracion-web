@@ -411,7 +411,7 @@ class ImageTrailVariant3 {
           xPercent: () => gsap.utils.random(-30, 30),
           yPercent: -200
         },
-        4
+        3
       );
   }
 
