@@ -178,16 +178,18 @@ const handleAnimationComplete = () => {
   console.log('All letters have animated!');
 };
 
-function getCurrentFrame(index) {
+// <--- CORREGIDO: Se agregó el tipo : number
+function getCurrentFrame(index: number) {
   return `${FRAME_PATH}${String(index).padStart(3, "0")}.jpg.jpg`;
 }
 
 const MainContent = () => {
-  const container = useRef(null);
-  const lenisRef = useRef(null);
-  const canvasRef = useRef(null);
-  const timelineTrackRef = useRef(null);
-  const statRefs = useRef([]);
+  // <--- CORREGIDO: Se agregaron los tipos explícitos para useRef
+  const container = useRef<HTMLDivElement>(null);
+  const lenisRef = useRef<Lenis | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const timelineTrackRef = useRef<HTMLDivElement>(null);
+  const statRefs = useRef<(HTMLSpanElement | null)[]>([]); // <--- Array de Spans
 
   // 1. PLAYLIST
   const playlist = [
@@ -270,7 +272,8 @@ const MainContent = () => {
     if (canvas && context) {
       canvas.width = 1920; 
       canvas.height = 1080;
-      const images = [];
+      // <--- CORREGIDO: Declarar tipo para array de imagenes
+      const images: HTMLImageElement[] = [];
       const playhead = { frame: 0 };
       for (let i = 0; i < TOTAL_FRAMES; i++) {
         const img = new Image();
@@ -327,7 +330,8 @@ const MainContent = () => {
     // --- E. HORIZONTAL SCROLL TIMELINE ---
     const track = timelineTrackRef.current;
     if (track) {
-      const getScrollAmount = () => -(track.scrollWidth - window.innerWidth);
+      // <--- CORREGIDO: (track as HTMLDivElement) para asegurar que scrollWidth existe
+      const getScrollAmount = () => -((track as HTMLDivElement).scrollWidth - window.innerWidth);
       const tween = gsap.to(track, {
         x: getScrollAmount,
         ease: "none",
@@ -377,39 +381,44 @@ const MainContent = () => {
     });
 
     // --- G. MATEMÁTICAS (Dibujo Pizarra) ---
-    gsap.utils.toArray(".math-row").forEach((row, i) => {
-        const svgPath = row.querySelector(".heart-path");
-        const equationCol = row.querySelector(".equation-col");
+    // <--- CORREGIDO: Se especifica el tipo "any" para row para evitar error "unknown" y luego se castea dentro
+    gsap.utils.toArray(".math-row").forEach((row: any, i) => {
+        const rowElement = row as HTMLElement; // Casting seguro
+        const svgPath = rowElement.querySelector(".heart-path");
+        const equationCol = rowElement.querySelector(".equation-col");
         
-        // Preparar SVG
-        const length = svgPath.getTotalLength();
-        gsap.set(svgPath, { 
-            strokeDasharray: length + 1,
-            strokeDashoffset: length + 1,
-            opacity: 1
-        });
-        gsap.set(equationCol, { opacity: 0, x: 20 });
+        if (svgPath && equationCol) { // <--- Null check extra por seguridad
+            // Preparar SVG
+            const pathElement = svgPath as SVGPathElement; // Casting
+            const length = pathElement.getTotalLength();
+            gsap.set(svgPath, { 
+                strokeDasharray: length + 1,
+                strokeDashoffset: length + 1,
+                opacity: 1
+            });
+            gsap.set(equationCol, { opacity: 0, x: 20 });
 
-        const tlMath = gsap.timeline({
-            scrollTrigger: {
-                trigger: row,
-                start: "top 75%", 
-                toggleActions: "play none none reverse"
-            }
-        });
+            const tlMath = gsap.timeline({
+                scrollTrigger: {
+                    trigger: rowElement,
+                    start: "top 75%", 
+                    toggleActions: "play none none reverse"
+                }
+            });
 
-        tlMath
-            .to(svgPath, {
-                strokeDashoffset: 0,
-                duration: 2,
-                ease: "power2.inOut"
-            })
-            .to(equationCol, {
-                opacity: 1,
-                x: 0,
-                duration: 1,
-                ease: "power3.out"
-            }, "-=1.0");
+            tlMath
+                .to(svgPath, {
+                    strokeDashoffset: 0,
+                    duration: 2,
+                    ease: "power2.inOut"
+                })
+                .to(equationCol, {
+                    opacity: 1,
+                    x: 0,
+                    duration: 1,
+                    ease: "power3.out"
+                }, "-=1.0");
+        }
     });
 
     // --- H. CODE POEM ---
@@ -438,30 +447,35 @@ const MainContent = () => {
     });
 
     // --- J. BUCKET LIST ---
-    gsap.utils.toArray(".bucket-item").forEach((item, i) => {
-        gsap.fromTo(item, 
+    // <--- CORREGIDO: Igual que en math-row, usamos any en el parámetro y casteamos dentro
+    gsap.utils.toArray(".bucket-item").forEach((item: any, i) => {
+        const el = item as HTMLElement;
+        gsap.fromTo(el, 
             { opacity: 0, x: 50 },
             { 
                 opacity: 1, 
                 x: 0, 
                 scrollTrigger: {
-                    trigger: item,
+                    trigger: el,
                     start: "top 85%",
                     toggleActions: "play none none reverse"
                 },
                 delay: i * 0.1
             }
         );
-        gsap.to(item.querySelector(".check-box"), {
-            backgroundColor: "#4ade80", 
-            borderColor: "#4ade80",
-            scrollTrigger: {
-                trigger: item,
-                start: "top 80%",
-            },
-            delay: i * 0.1 + 0.3,
-            duration: 0.3
-        });
+        const checkBox = el.querySelector(".check-box");
+        if (checkBox) {
+            gsap.to(checkBox, {
+                backgroundColor: "#4ade80", 
+                borderColor: "#4ade80",
+                scrollTrigger: {
+                    trigger: el,
+                    start: "top 80%",
+                },
+                delay: i * 0.1 + 0.3,
+                duration: 0.3
+            });
+        }
     });
 
     // --- K. Pregunta Final ---
@@ -641,7 +655,8 @@ const MainContent = () => {
                       <h3 className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-4">{stat.label}</h3>
                       <div className="flex items-baseline">
                           <span 
-                            ref={(el) => { statRefs.current[index] = el }}
+                            // <--- CORREGIDO: Casting a HTMLSpanElement para que no sea "never"
+                            ref={(el) => { if (el) statRefs.current[index] = el; }}
                             className={`text-5xl md:text-6xl font-black ${stat.color}`}
                           >
                             {stat.isText ? stat.value : 0}
@@ -692,14 +707,14 @@ const MainContent = () => {
                                 </svg>
                                 <svg className="relative w-full h-full" viewBox="-3 -3 6 6" style={{ overflow: 'visible' }}>
                                     <path 
-                                        className="heart-path opacity-0" 
-                                        d={item.path} 
-                                        fill="none" 
-                                        stroke="#FFD700" 
-                                        strokeWidth="0.08" 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round"
-                                        style={{ filter: 'drop-shadow(0 0 2px #FFD700)' }} 
+                                            className="heart-path opacity-0" 
+                                            d={item.path} 
+                                            fill="none" 
+                                            stroke="#FFD700" 
+                                            strokeWidth="0.08" 
+                                            strokeLinecap="round" 
+                                            strokeLinejoin="round"
+                                            style={{ filter: 'drop-shadow(0 0 2px #FFD700)' }} 
                                     />
                                 </svg>
                             </div>
