@@ -21,7 +21,7 @@ import ImageTrail from "../components/ImageTrail";
 import Prism from "../components/Prism";
 
 // --- CONFIGURACIÓN ---
-const FECHA_DE_DECLARACION = "2026-01-30T15:20:00";
+const FECHA_DE_DECLARACION = "2026-01-30T18:20:00";
 const TOTAL_FRAMES = 79;
 const FRAME_PATH = "/frames/x/26452-358778857_";
 
