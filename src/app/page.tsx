@@ -12,6 +12,8 @@ import MusicController from "../components/MusicController";
 import SplitText from "../components/SplitText";
 import DecryptedText from "../components/DecryptedText";
 import ScrollReveal from "../components/ScrollReveal";
+import CurvedLoop from "../components/CurvedLoop";
+import ImageTrail from "../components/ImageTrail";
 
 // --- CONFIGURACIÓN ---
 const FECHA_DE_DECLARACION = "2026-01-29T17:10:00";
@@ -475,7 +477,40 @@ const MainContent = () => {
                   </div>
               ))}
           </div>
+
+            <CurvedLoop marqueeText="Welcome to React Bits ✦" />
+                        
+
       </section>
+
+      <div style={{ height: '1080px', position: 'relative', overflow: 'hidden'}}>
+        <h2 className="text-center text-amber-100 text-4xl font-bold">
+          MÁS FOTOS PORQUE SI 
+        </h2>
+        <ImageTrail
+          items={[
+            '/images/ima/1.jpg',
+            '/images/ima/2.jpg',
+            '/images/ima/3.jpg',
+            '/images/ima/4.jpg',
+            '/images/ima/5.jpg',
+            '/images/ima/6.jpg',
+            '/images/ima/7.jpg',
+            '/images/ima/8.jpg',
+            '/images/ima/9.jpg',
+            '/images/ima/10.jpg',
+            '/images/ima/11.jpg',
+            '/images/ima/12.jpg',
+            '/images/ima/13.jpg',
+            '/images/ima/14.jpg',
+            '/images/ima/15.jpg',
+            '/images/ima/16.jpg',
+            '/images/ima/17.jpg',
+            // ...
+          ]}
+          variant={3}
+        />
+      </div>
 
 
       {/* --- SECCIÓN FINAL --- */}
